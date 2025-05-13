@@ -3,19 +3,26 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 import axios from 'axios';
 
+// Mock axios
 jest.mock('axios', () => ({
   post: jest.fn(),
 }));
 
+// Mock environment variable
+beforeAll(() => {
+  process.env.REACT_APP_API_URL = 'http://localhost:4000'; // Mock API URL
+});
+
 describe('Book Search App', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default mock response for axios
+    axios.post.mockResolvedValue({ data: { books: [], summary: '' } });
   });
 
   test('renders search input with correct placeholder', () => {
     render(<App />);
     const input = screen.getByPlaceholderText(/Search for books.../i);
-    console.log(input);
     expect(input).toBeInTheDocument();
   });
 
