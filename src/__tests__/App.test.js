@@ -14,7 +14,7 @@ describe('Book Search App', () => {
 
   test('renders search input with correct placeholder', () => {
     render(<App />);
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText(/Search for books.../i);
     console.log(input);
     expect(input).toBeInTheDocument();
   });
@@ -33,7 +33,7 @@ describe('Book Search App', () => {
   test('shows summary when no books found', async () => {
     axios.post.mockResolvedValueOnce({ data: { books: [], summary: 'No books found.' } });
     render(<App />);
-    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'unknown book' } });
+    fireEvent.change(screen.getByPlaceholderText(/Search for books.../i), { target: { value: 'unknown book' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
     expect(await screen.findByText(/no books found/i)).toBeInTheDocument();
   });
@@ -45,7 +45,7 @@ describe('Book Search App', () => {
     ];
     axios.post.mockResolvedValueOnce({ data: { books: mockBooks, summary: 'Found books.' } });
     render(<App />);
-    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'test' } });
+    fireEvent.change(screen.getByPlaceholderText(/Search for books.../i), { target: { value: 'test' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
     expect(await screen.findByText(/found books/i)).toBeInTheDocument();
     expect(await screen.findByText(/book 1/i)).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('Book Search App', () => {
   test('shows backend error message', async () => {
     axios.post.mockResolvedValueOnce({ data: { error: 'Backend error' } });
     render(<App />);
-    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'test' } });
+    fireEvent.change(screen.getByPlaceholderText(/Search for books.../i), { target: { value: 'test' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
     expect(await screen.findByText(/backend error/i)).toBeInTheDocument();
   });
@@ -69,7 +69,7 @@ describe('Book Search App', () => {
         })
     );
     render(<App />);
-    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'test' } });
+    fireEvent.change(screen.getByPlaceholderText(/Search for books.../i), { target: { value: 'test' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
     resolvePromise({ data: { books: [], summary: '' } });
