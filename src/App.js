@@ -23,7 +23,7 @@ const App = () => {
     setSummary('');
     setBooks([]);
     try {
-      const response = await axios.post('https://bookwiseapp-backend.azurewebsites.net/search-books', { query });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/search-books`, { query });
       if (response.data.error) {
         setError(response.data.error); // Display backend error message
         return;
