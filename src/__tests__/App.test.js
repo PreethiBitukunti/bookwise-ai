@@ -1,0 +1,75 @@
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import App from '../App';
+import axios from 'axios';
+
+jest.mock('axios');
+
+describe('Book Search App', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('renders search input with correct placeholder', () => {
+    render(<App />);
+    const input = screen.getByPlaceholderText(/search/i);
+    expect(input).toBeInTheDocument();
+  });
+
+  test('renders search button', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
+  });
+
+  test('shows error on empty search', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+    expect(await screen.findByText(/please enter a search term/i)).toBeInTheDocument();
+  });
+
+  test('shows summary when no books found', async () => {
+    axios.post.mockResolvedValueOnce({ data: { books: [], summary: 'No books found.' } });
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'unknown book' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+    expect(await screen.findByText(/no books found/i)).toBeInTheDocument();
+  });
+
+  test('renders book results when books are found', async () => {
+    const mockBooks = [
+      { title: 'Book 1', author: 'Author 1', year: 2020 },
+      { title: 'Book 2', author: 'Author 2', year: 2021 }
+    ];
+    axios.post.mockResolvedValueOnce({ data: { books: mockBooks, summary: 'Found books.' } });
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'test' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+    expect(await screen.findByText(/found books/i)).toBeInTheDocument();
+    expect(await screen.findByText(/book 1/i)).toBeInTheDocument();
+    expect(await screen.findByText(/book 2/i)).toBeInTheDocument();
+  });
+
+  test('shows backend error message', async () => {
+    axios.post.mockResolvedValueOnce({ data: { error: 'Backend error' } });
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'test' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+    expect(await screen.findByText(/backend error/i)).toBeInTheDocument();
+  });
+
+  test('shows loading indicator while fetching', async () => {
+    let resolvePromise;
+    axios.post.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePromise = resolve;
+        })
+    );
+    render(<App />);
+    fireEvent.change(screen.getByPlaceholderText(/search/i), { target: { value: 'test' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    resolvePromise({ data: { books: [], summary: '' } });
+    await waitFor(() => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument());
+  });
+});
