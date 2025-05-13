@@ -8,11 +8,6 @@ jest.mock('axios', () => ({
   post: jest.fn(),
 }));
 
-// Mock environment variable
-beforeAll(() => {
-  process.env.REACT_APP_API_URL = 'http://localhost:4000'; // Mock API URL
-});
-
 describe('Book Search App', () => {
   beforeEach(() => {
     jest.clearAllMocks();
