@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - bookwiseapp
+name: Build and deploy React app to Azure Web App - bookwiseapp
 
 on:
   push:
@@ -7,16 +7,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20.x'
 
@@ -33,45 +33,10 @@ jobs:
         env:
           REACT_APP_API_URL: 'https://bookwiseapp-backend.azurewebsites.net'
 
-      - name: Zip artifact for deployment
-        run: zip -r release.zip ./*
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: release.zip
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-    permissions:
-      id-token: write # This is required for requesting the JWT
-      contents: read # This is required for actions/checkout
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_605EFEAD493F4245B38B18391EADCC31 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_383EA1BD8DBF463CBEA25ABA2D6C30BA }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_695F1CB5031146FF8224105F6A470F84 }}
-
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'bookwiseapp'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+          package: ./build
           slot-name: 'production'
