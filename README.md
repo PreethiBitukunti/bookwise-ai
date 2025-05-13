@@ -58,7 +58,7 @@ The **Book Search App** is a web application that allows users to search for boo
 3. Create a .env file in the backend folder and add the following environment variables:
    OPENAI_API_KEY=<your_openai_api_key>
    OPENLIBRARY_URL=http://openlibrary.org/search.json
-   POWER_AUTOMATE_FLOW_URL=https://prod-131.westus.logic.azure.com:443/workflows/335256929f874a69bd19348d5afc4b67/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=foLzu1UsIi1rGhiEiReuYuqB6mn13RkbV2CYwcJAJVk
+   POWER_AUTOMATE_FLOW_URL=<your_power_automate_flow_url>
 
 4.Run the backend server:
 
