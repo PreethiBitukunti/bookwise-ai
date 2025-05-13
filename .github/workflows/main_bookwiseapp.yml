@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read # This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -23,11 +23,14 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Test the app
+        run: npm run test
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -43,10 +46,9 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
 
     steps:
       - name: Download artifact from build job
@@ -60,15 +62,17 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2A624268F5E94D68B91CE89BDB1AFCC2 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E4A0B97F927E4DC2B31AD1E76291275B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4B9AE470A1AC4B8CB7693C8F38C1C529 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_605EFEAD493F4245B38B18391EADCC31 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_383EA1BD8DBF463CBEA25ABA2D6C30BA }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_695F1CB5031146FF8224105F6A470F84 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'bookwiseapp'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
+
           
