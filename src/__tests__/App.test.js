@@ -3,7 +3,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 import axios from 'axios';
 
-jest.mock('axios');
+jest.mock('axios', () => ({
+  post: jest.fn(),
+}));
 
 describe('Book Search App', () => {
   beforeEach(() => {
@@ -13,6 +15,7 @@ describe('Book Search App', () => {
   test('renders search input with correct placeholder', () => {
     render(<App />);
     const input = screen.getByPlaceholderText(/search/i);
+    console.log(input);
     expect(input).toBeInTheDocument();
   });
 
