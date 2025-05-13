@@ -2,16 +2,23 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 import axios from 'axios';
+import { act } from 'react-dom/test-utils';
 
 // Mock axios
 jest.mock('axios', () => ({
-  post: jest.fn(),
+  post: jest.fn((url, { query }) => {
+    if (!query) {
+      return Promise.resolve({ data: { error: 'Query is missing' } });
+    }
+    // Default response for all tests
+    return Promise.resolve({ data: { books: [], summary: '' } });
+  }),
 }));
 
 describe('Book Search App', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Default mock response for axios
+    // Reset the default mock response for axios
     axios.post.mockResolvedValue({ data: { books: [], summary: '' } });
   });
 
@@ -43,7 +50,7 @@ describe('Book Search App', () => {
   test('renders book results when books are found', async () => {
     const mockBooks = [
       { title: 'Book 1', author: 'Author 1', year: 2020 },
-      { title: 'Book 2', author: 'Author 2', year: 2021 }
+      { title: 'Book 2', author: 'Author 2', year: 2021 },
     ];
     axios.post.mockResolvedValueOnce({ data: { books: mockBooks, summary: 'Found books.' } });
     render(<App />);
@@ -59,7 +66,7 @@ describe('Book Search App', () => {
     render(<App />);
     fireEvent.change(screen.getByPlaceholderText(/Search for books.../i), { target: { value: 'test' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
-    expect(await screen.findByText(/backend error/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/backend error/i)).toBeInTheDocument());
   });
 
   test('shows loading indicator while fetching', async () => {
@@ -74,7 +81,8 @@ describe('Book Search App', () => {
     fireEvent.change(screen.getByPlaceholderText(/Search for books.../i), { target: { value: 'test' } });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
-    resolvePromise({ data: { books: [], summary: '' } });
+
+    await act(async () => resolvePromise({ data: { books: [], summary: '' } }));
     await waitFor(() => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument());
   });
 });
